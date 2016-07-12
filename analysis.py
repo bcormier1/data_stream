@@ -1,5 +1,10 @@
+import pandas
+from datetime import datetime
+
+
 class Analysis:
-    
+
+    @staticmethod
     def analyze(data, field, condition):
         LENGTHTHRESHOLD = 1
 
@@ -26,3 +31,39 @@ class Analysis:
 
                 time_range_over = list()
         return over_groups
+
+    @staticmethod
+    def create_df(file):
+        # can be changed to access files of different types or locations
+        return pandas.read_excel(file)
+
+
+    @staticmethod
+    def convert_to_str(groups: list) -> list:
+        readable = list()
+        for item in groups:
+            start_d = item[0][0]
+            start_t = item[0][1]
+            end_d = item[1][0]
+            end_t = item[1][1]
+
+            readable.append(((str(start_d.month) + '/' + str(start_d.day) + '/' + str(start_d.year),
+                              str(start_t.hour) + ':' + str(start_t.minute) + ':' + str(start_t.second)),
+                             (str(end_d.month) + '/' + str(end_d.day) + '/' + str(end_d.year),
+                              str(end_t.hour) + ':' + str(end_t.minute) + ':' + str(end_t.second))))
+        return readable
+
+    @staticmethod
+    def date_to_str(date: datetime)-> str:
+        #takes datetime and converts it to a string to be used to index the database
+        if date.month < 10:
+            month_str = '0' + str(date.month)
+        else:
+            month_str = str(date.month)
+
+        if date.day < 10:
+            day_str = '0' + str(date.day)
+        else:
+            day_str = str(date.day)
+
+        return str(date.year) + month_str + day_str
