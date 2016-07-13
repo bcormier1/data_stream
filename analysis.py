@@ -6,7 +6,8 @@ class Analysis:
 
     @staticmethod
     def analyze(data, field, condition):
-        LENGTHTHRESHOLD = 1
+        # takes data and checks condition for all items in the field
+        LENGTHTHRESHOLD = 2
 
         over_groups = list()
         time_range_over = list()
@@ -40,6 +41,7 @@ class Analysis:
 
     @staticmethod
     def convert_to_str(groups: list) -> list:
+        # converts the result of analyze to an easily readable string
         readable = list()
         for item in groups:
             start_d = item[0][0]
@@ -54,16 +56,30 @@ class Analysis:
         return readable
 
     @staticmethod
-    def date_to_str(date: datetime)-> str:
-        #takes datetime and converts it to a string to be used to index the database
+    def date_to_request(date, time):
+        # takes date and time and puts it in the proper form to index the data
         if date.month < 10:
-            month_str = '0' + str(date.month)
+            month = '0' + str(date.month)
         else:
-            month_str = str(date.month)
-
+            month = str(date.month)
         if date.day < 10:
-            day_str = '0' + str(date.day)
+            day = '0' + str(date.day)
         else:
-            day_str = str(date.day)
+            day = str(date.day)
+        date_str = str(date.year) + month + day
 
-        return str(date.year) + month_str + day_str
+        if time.hour < 10:
+            hour = '0' + str(time.hour)
+        else:
+            hour = str(time.hour)
+        if time.minute < 10:
+            minute = '0' + str(time.minute)
+        else:
+            minute = str(time.minute)
+        if time.second < 10:
+            second = '0' + str(time.second)
+        else:
+            second = str(time.second)
+        time_str = hour + ':' + minute + ':' + second
+
+        return date_str + ' ' + time_str
