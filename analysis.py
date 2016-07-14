@@ -56,9 +56,10 @@ class Analysis:
                               str(end_t.hour) + ':' + str(end_t.minute) + ':' + str(end_t.second) + '\n'
         return readable
 
+
     @staticmethod
-    def date_to_request(date):
-        # takes date and time and puts it in the proper form to index the data
+    def date_to_str(date):
+        # takes date and puts it in the proper form to index the data
         if date.month < 10:
             month = '0' + str(date.month)
         else:
@@ -69,18 +70,32 @@ class Analysis:
             day = str(date.day)
         date_str = str(date.year) + month + day
 
-        if date.hour < 10:
-            hour = '0' + str(date.hour)
+        return date_str
+
+    @staticmethod
+    def time_to_str(time):
+        # takes time and puts it in the format for a request
+        if time.hour < 10:
+            hour = '0' + str(time.hour)
         else:
-            hour = str(date.hour)
-        if date.minute < 10:
-            minute = '0' + str(date.minute)
+            hour = str(time.hour)
+        if time.minute < 10:
+            minute = '0' + str(time.minute)
         else:
-            minute = str(date.minute)
-        if date.second < 10:
-            second = '0' + str(date.second)
+            minute = str(time.minute)
+        if time.second < 10:
+            second = '0' + str(time.second)
         else:
-            second = str(date.second)
+            second = str(time.second)
         time_str = hour + ':' + minute + ':' + second
+
+        return time_str
+
+
+    @staticmethod
+    def date_to_request(date):
+
+        date_str = Analysis.date_to_str(date)
+        time_str = Analysis.time_to_str(date)
 
         return date_str + ' ' + time_str

@@ -7,7 +7,7 @@ import datetime
 ADDRESS = ('localhost', 9999)
 WAITTIME = 3600*24  # amount of time to wait before checking again(in seconds)
 # by adjusting the wait time the system can automaticaly check at intervals and increment time at the same rate
-
+DATASTORE = 'C:\\Users\\Brodic Cromier\\Documents\\data_stream\\data_store.pickle'  # directory to store pickle in
 
 
 
@@ -39,6 +39,19 @@ def increment_time(current_date):
     return current_date
 
 
+def store(data, date):
+    start_date = date - datetime.timedelta(weeks=1)  # get the date from a week ago
+
+    week_ago = Analysis.date_to_str(start_date)
+    current_time = pandas.Timestamp(date.hour, date.minute, date.second)  # time is the same a week ago as now
+
+
+    # store data from within a week in a pickle
+    data[(data['Date'] > week_ago) | ((data['Date'] == week_ago) & (data['Time'] > current_time))].to_pickle(DATASTORE)
+
+
+def load_data():
+    return pandas.read_pickle(DATASTORE)  # return dataframe from pickle
 
 
 
@@ -50,7 +63,7 @@ if __name__ == '__main__':
     date = datetime.datetime(2016, 7, 6)
 
     while True:
-        timer.sleep(WAITTIME)  # repeat loop every n seconds
+        timer.sleep(5)  # repeat loop every n seconds
 
         # contact server and normalize response data
         server_response = check_server(ADDRESS, date)
@@ -75,5 +88,9 @@ if __name__ == '__main__':
 
                 analysis = Analysis.analyze(data, 'Temp', lambda x: x > 100)  # send data to be analyzed
                 print(Analysis.convert_to_str(analysis))  # print easy to read time frames that met the condition
+
+        store(data, date)
+
+        data = load_data()
 
         date = increment_time(date)  # increments time/date for automatic checking
