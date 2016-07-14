@@ -5,9 +5,18 @@ from analysis import Analysis
 import datetime
 
 CLOUD = 'C:\\Users\\Brodic Cromier\\Documents\\cloud_sim'
-ADDRESS = ('localhost',9999)
+ADDRESS = ('localhost', 9999)
 
 
+def get_data():
+    result = pandas.DataFrame()
+    for file in Path(CLOUD).iterdir():
+        location = CLOUD + '\\' + file.name
+        if result.empty:
+            result = Analysis.create_df(location)
+        else:
+            result = pandas.concat([result, Analysis.create_df(location)], ignore_index=True)
+    return result
 
 if __name__ == '__main__':
     # set up socket to get connection
@@ -20,13 +29,7 @@ if __name__ == '__main__':
     # main action loop the keep fielding requests
     while True:
         # reads data from files and puts it in a database for access later
-        data = pandas.DataFrame()
-        for file in Path(CLOUD).iterdir():
-            location = CLOUD + '\\' + file.name
-            if data.empty:
-                data = Analysis.create_df(location)
-            else:
-                data = pandas.concat([data, Analysis.create_df(location)], ignore_index=True)
+        data = get_data()
 
         conn, addr = server.accept()  # get a connection from a client
 

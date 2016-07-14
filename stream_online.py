@@ -5,15 +5,18 @@ from analysis import Analysis
 import datetime
 
 ADDRESS = ('localhost', 9999)
+WAITTIME = 3600*24  # amount of time to wait before checking again(in seconds)
+# by adjusting the wait time the system can automaticaly check at intervals and increment time at the same rate
 
 
 
-def check_server(address, date, time):
+
+def check_server(address, date):
     # create client side socket
     checker = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     # create the proper request string with a helper function
-    request = Analysis.date_to_request(date, time)
+    request = Analysis.date_to_request(date)
 
     # inside a try in case the connection fails the exception can be handled differently to prevent data loss
     # its not necessary currently but could be if things are added to it
@@ -29,32 +32,13 @@ def check_server(address, date, time):
         checker.close()  # close connection no matter what
 
 
-def increment_date(date):
-    # returns a new datetime object one day ahead
-    day = date.day
-    month = date.month
-    year = date.year
 
-    day += 1
 
-    if day == 30 and month in (4, 6, 9, 11):
-        day = 1
-        month += 1
-    elif day == 31 and month in (1, 3, 5, 7, 8, 10, 12):
-        if month == 12:
-            year += 1
-            month = 1
-        else:
-            month += 1
-        day = 1
-    elif day == 28 and month == 2 and ((year % 4 == 0 and year % 100 != 0) or year % 400 == 0):  # leap year
-        day = 1
-        month += 1
-    elif day == 29 and month == 2:  # not a leap year
-        day = 1
-        month += 1
+def increment_time(current_date):
+    current_date += datetime.timedelta(seconds=WAITTIME)  # increment time by specified amount of seconds
+    return current_date
 
-    return datetime.datetime(year, month, day)
+
 
 
 
@@ -65,13 +49,11 @@ if __name__ == '__main__':
 
     date = datetime.datetime(2016, 7, 6)
 
-    time = datetime.time(0, 0, 0)
-
     while True:
-        timer.sleep(5)  # repeat loop every 5 seconds
+        timer.sleep(WAITTIME)  # repeat loop every n seconds
 
         # contact server and normalize response data
-        server_response = check_server(ADDRESS, date, time)
+        server_response = check_server(ADDRESS, date)
         server_response = server_response.sort_values(by=['Date', 'Time'])  # sort in ascending order based on time
         server_response.index = range(len(server_response))  # restart index at 0
         server_response['Time'] = pandas.to_datetime(server_response['Time'])  # make the time column datetime objects
@@ -94,4 +76,4 @@ if __name__ == '__main__':
                 analysis = Analysis.analyze(data, 'Temp', lambda x: x > 100)  # send data to be analyzed
                 print(Analysis.convert_to_str(analysis))  # print easy to read time frames that met the condition
 
-        date = increment_date(date)  # increments date for automatic checking
+        date = increment_time(date)  # increments time/date for automatic checking
