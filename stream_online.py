@@ -62,14 +62,14 @@ if __name__ == '__main__':
 
     date = datetime.datetime(2016, 7, 6)
 
+    alerts = ''
+
     while True:
         timer.sleep(5)  # repeat loop every n seconds
 
         # contact server and normalize response data
         server_response = check_server(ADDRESS, date)
-        server_response = server_response.sort_values(by=['Date', 'Time'])  # sort in ascending order based on time
-        server_response.index = range(len(server_response))  # restart index at 0
-        server_response['Time'] = pandas.to_datetime(server_response['Time'])  # make the time column datetime objects
+        server_response = Analysis.normalize(server_response)
 
         if not server_response.empty:  # if we get a response
             # if we either have no data collected or already have the same set don't repeat analysis
@@ -81,13 +81,14 @@ if __name__ == '__main__':
                     data = pandas.concat([data, server_response], ignore_index=True)
 
                 # normalize data
-                data = data.sort_values(by=['Date', 'Time'])
-                data['Time'] = pandas.to_datetime(data['Time'])
-                data = data.drop_duplicates()  # no fear of losing data because it is time series
-                data.index = range(len(data))
+                data = Analysis.normalize(data)
 
                 analysis = Analysis.analyze(data, 'Temp', lambda x: x > 100)  # send data to be analyzed
-                print(Analysis.convert_to_str(analysis))  # print easy to read time frames that met the condition
+                new_alerts = Analysis.convert_to_str(analysis)
+                # print easy to read time frames that met the condition if they have not been displayed before
+                Analysis.print_analysis(alerts, new_alerts)
+                alerts += new_alerts  # adds new alerts to old alerts
+
 
         store(data, date)
 
